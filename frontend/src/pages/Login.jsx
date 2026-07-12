@@ -1,14 +1,37 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import api from '../services/api';
 import '../styles/auth.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ email, password });
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      
+      if (response.data && response.data.token) {
+        localStorage.setItem('token', response.data.token);
+      }
+      
+      if (response.data && response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      }
+
+      navigate('/dashboard');
+    } catch (err) {
+      setLoading(false);
+      const backendMessage = err.response?.data?.message || err.response?.data;
+      setError(typeof backendMessage === 'string' ? backendMessage : 'Invalid email or password.');
+    }
   };
 
   return (
@@ -44,8 +67,12 @@ const Login = () => {
             />
           </div>
 
-          <button className="auth-button" type="submit">Login</button>
+          <button className="auth-button" type="submit" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
         </form>
+
+        {error && <div className="auth-error-message" role="alert">{error}</div>}
 
         <footer className="auth-footer">
           <span>Don't have an account?</span>
@@ -57,4 +84,5 @@ const Login = () => {
 };
 
 export default Login;
+
 

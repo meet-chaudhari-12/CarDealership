@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import api from '../services/api';
 import '../styles/auth.css';
 
 const Register = () => {
@@ -7,10 +8,33 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ fullName, email, password, confirmPassword });
+    setError('');
+    setSuccess('');
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await api.post('/auth/register', { name: fullName, email, password });
+      setSuccess('Registration successful! Redirecting to login...');
+      setTimeout(() => {
+        navigate('/');
+      }, 1000);
+    } catch (err) {
+      setLoading(false);
+      const backendMessage = err.response?.data?.message || err.response?.data;
+      setError(typeof backendMessage === 'string' ? backendMessage : 'Registration failed. Please try again.');
+    }
   };
 
   return (
@@ -70,8 +94,13 @@ const Register = () => {
             />
           </div>
 
-          <button className="auth-button" type="submit">Register</button>
+          <button className="auth-button" type="submit" disabled={loading}>
+            {loading ? 'Registering...' : 'Register'}
+          </button>
         </form>
+
+        {error && <div className="auth-error-message" role="alert">{error}</div>}
+        {success && <div className="auth-success-message" role="alert">{success}</div>}
 
         <footer className="auth-footer">
           <span>Already have an account?</span>
@@ -83,4 +112,5 @@ const Register = () => {
 };
 
 export default Register;
+
 

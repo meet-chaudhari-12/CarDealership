@@ -1,94 +1,125 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Register from './Register';
+import api from '../services/api';
+
+jest.mock('../services/api');
 
 const renderWithRouter = (ui) => {
   return render(ui, { wrapper: BrowserRouter });
 };
 
+// Mock navigate function
+const mockNavigate = jest.fn();
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+}));
+
 describe('Register Page', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   test('renders all elements correctly', () => {
     renderWithRouter(<Register />);
-
-    // 1. renders heading
     expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
-    expect(screen.getByText(/register to continue/i)).toBeInTheDocument();
-
-    // 2. renders Full Name field
-    const nameInput = screen.getByLabelText(/full name/i);
-    expect(nameInput).toBeInTheDocument();
-    expect(nameInput).toHaveAttribute('type', 'text');
-
-    // 3. renders Email field
-    const emailInput = screen.getByLabelText(/email/i);
-    expect(emailInput).toBeInTheDocument();
-    expect(emailInput).toHaveAttribute('type', 'email');
-
-    // 4. renders Password field
-    const passwordInput = screen.getByLabelText(/^password$/i);
-    expect(passwordInput).toBeInTheDocument();
-    expect(passwordInput).toHaveAttribute('type', 'password');
-
-    // 5. renders Confirm Password field
-    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
-    expect(confirmPasswordInput).toBeInTheDocument();
-    expect(confirmPasswordInput).toHaveAttribute('type', 'password');
-
-    // 6. renders Register button
-    const registerButton = screen.getByRole('button', { name: /register/i });
-    expect(registerButton).toBeInTheDocument();
-    expect(registerButton).toHaveAttribute('type', 'submit');
-
-    // 7. renders Login navigation link
-    const loginLink = screen.getByRole('link', { name: /login/i });
-    expect(loginLink).toBeInTheDocument();
-    expect(loginLink).toHaveAttribute('href', '/');
+    expect(screen.getByLabelText(/full name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^password$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /register/i })).toBeInTheDocument();
   });
 
-  test('allows typing into all fields', () => {
+  test('displays error when passwords do not match', async () => {
     renderWithRouter(<Register />);
 
-    const nameInput = screen.getByLabelText(/full name/i);
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/^password$/i);
-    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
+    fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'john@example.com' } });
+    fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } });
+    fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'different' } });
 
-    fireEvent.change(nameInput, { target: { value: 'John Doe' } });
-    fireEvent.change(emailInput, { target: { value: 'john@example.com' } });
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } });
+    fireEvent.click(screen.getByRole('button', { name: /register/i }));
 
-    expect(nameInput.value).toBe('John Doe');
-    expect(emailInput.value).toBe('john@example.com');
-    expect(passwordInput.value).toBe('password123');
-    expect(confirmPasswordInput.value).toBe('password123');
+    expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
+    expect(api.post).not.toHaveBeenCalled();
   });
 
-  test('submits successfully without crashing', () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  test('submits successfully and redirects to login', async () => {
+    api.post.mockResolvedValueOnce({ data: {} });
+    jest.useFakeTimers();
+
     renderWithRouter(<Register />);
 
-    const nameInput = screen.getByLabelText(/full name/i);
-    const emailInput = screen.getByLabelText(/email/i);
-    const passwordInput = screen.getByLabelText(/^password$/i);
-    const confirmPasswordInput = screen.getByLabelText(/confirm password/i);
-    const submitButton = screen.getByRole('button', { name: /register/i });
+    fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'john@example.com' } });
+    fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } });
+    fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } });
 
-    fireEvent.change(nameInput, { target: { value: 'John Doe' } });
-    fireEvent.change(emailInput, { target: { value: 'john@example.com' } });
-    fireEvent.change(passwordInput, { target: { value: 'password123' } });
-    fireEvent.change(confirmPasswordInput, { target: { value: 'password123' } });
-    
-    fireEvent.click(submitButton);
+    fireEvent.click(screen.getByRole('button', { name: /register/i }));
 
-    expect(consoleSpy).toHaveBeenCalledWith({
-      fullName: 'John Doe',
-      email: 'john@example.com',
-      password: 'password123',
-      confirmPassword: 'password123',
+    // Button should be disabled and change text
+    expect(screen.getByRole('button', { name: /registering\.\.\./i })).toBeDisabled();
+
+    // Wait for the api call to be resolved and DOM to update
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/auth/register', {
+        name: 'John Doe',
+        email: 'john@example.com',
+        password: 'password123',
+      });
+      expect(screen.getByText(/registration successful! redirecting to login\.\.\./i)).toBeInTheDocument();
     });
 
-    consoleSpy.mockRestore();
+    // Fast-forward 1 second
+    jest.advanceTimersByTime(1000);
+
+    expect(mockNavigate).toHaveBeenCalledWith('/');
+
+    jest.useRealTimers();
+  });
+
+  test('displays backend error message on failure', async () => {
+    const errorMessage = 'Email already in use';
+    api.post.mockRejectedValueOnce({
+      response: {
+        data: { message: errorMessage }
+      }
+    });
+
+    renderWithRouter(<Register />);
+
+    fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'john@example.com' } });
+    fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } });
+    fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /register/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(errorMessage)).toBeInTheDocument();
+    });
+
+    // Button should be enabled back on failure
+    expect(screen.getByRole('button', { name: /register/i })).not.toBeDisabled();
+  });
+
+  test('displays generic error message on default failure', async () => {
+    api.post.mockRejectedValueOnce(new Error('Network Error'));
+
+    renderWithRouter(<Register />);
+
+    fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'John Doe' } });
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'john@example.com' } });
+    fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'password123' } });
+    fireEvent.change(screen.getByLabelText(/confirm password/i), { target: { value: 'password123' } });
+
+    fireEvent.click(screen.getByRole('button', { name: /register/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/registration failed\. please try again\./i)).toBeInTheDocument();
+    });
   });
 });
+
