@@ -1,20 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import VehicleCard from '../components/VehicleCard';
+import api from '../services/api';
 import '../styles/dashboard.css';
 
-const dummyVehicles = [
-  { id: 1, make: 'Toyota', model: 'Camry', year: 2022, price: 1800000, status: 'Available' },
-  { id: 2, make: 'Honda', model: 'City', year: 2021, price: 1250000, status: 'Sold' },
-  { id: 3, make: 'Hyundai', model: 'Creta', year: 2023, price: 1550000, status: 'Available' },
-  { id: 4, make: 'Tata', model: 'Nexon', year: 2022, price: 950000, status: 'Available' },
-  { id: 5, make: 'Mahindra', model: 'Thar', year: 2023, price: 1600000, status: 'Sold' },
-  { id: 6, make: 'Maruti Suzuki', model: 'Swift', year: 2020, price: 650000, status: 'Available' }
-];
-
 const Dashboard = () => {
+  const [vehicles, setVehicles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
+
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const response = await api.get('/vehicles');
+        setVehicles(response.data || []);
+      } catch (err) {
+        setError('Unable to load vehicles.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVehicles();
+  }, []);
 
   return (
     <main className="dashboard-container">
@@ -43,11 +55,15 @@ const Dashboard = () => {
         <Link to="/add-vehicle" className="btn-add-vehicle">Add Vehicle</Link>
       </section>
 
-      {dummyVehicles.length === 0 ? (
+      {loading ? (
+        <p className="empty-state">Loading...</p>
+      ) : error ? (
+        <p className="empty-state">{error}</p>
+      ) : vehicles.length === 0 ? (
         <p className="empty-state">No vehicles found.</p>
       ) : (
         <section className="vehicle-grid">
-          {dummyVehicles.map((vehicle) => (
+          {vehicles.map((vehicle) => (
             <VehicleCard key={vehicle.id} vehicle={vehicle} />
           ))}
         </section>
@@ -57,4 +73,5 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
 

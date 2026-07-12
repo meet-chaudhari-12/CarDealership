@@ -4,12 +4,13 @@ import { BrowserRouter } from 'react-router-dom';
 import VehicleCard from './VehicleCard';
 
 const dummyVehicle = {
-  id: 1,
-  make: 'Toyota',
-  model: 'Camry',
+  id: "1",
+  make: "Toyota",
+  model: "Camry",
+  category: "Sedan",
   year: 2022,
   price: 1800000,
-  status: 'Available'
+  quantity: 5
 };
 
 const renderWithRouter = (ui) => {
@@ -17,47 +18,77 @@ const renderWithRouter = (ui) => {
 };
 
 describe('VehicleCard Component', () => {
+
   test('displays all vehicle information correctly', () => {
+
     renderWithRouter(<VehicleCard vehicle={dummyVehicle} />);
 
-    // 1. Displays make and model
-    expect(screen.getByRole('heading', { name: /toyota camry/i })).toBeInTheDocument();
+    // Displays make and model
+    expect(
+      screen.getByRole('heading', { name: /toyota camry/i })
+    ).toBeInTheDocument();
 
-    // 2. Displays year
-    expect(screen.getByText(/year: 2022/i)).toBeInTheDocument();
+    // Displays category
+    expect(
+      screen.getByText(/category: sedan/i)
+    ).toBeInTheDocument();
 
-    // 3. Displays formatted price
-    expect(screen.getByText(/₹18,00,000/i)).toBeInTheDocument();
+    // Displays year
+    expect(
+      screen.getByText(/year: 2022/i)
+    ).toBeInTheDocument();
 
-    // 4. Displays status badge
+    // Displays stock
+    expect(
+      screen.getByText(/stock: 5/i)
+    ).toBeInTheDocument();
+
+    // Displays formatted price
+    expect(
+      screen.getByText(/₹18,00,000/i)
+    ).toBeInTheDocument();
+
+    // Displays availability badge
     const badge = screen.getByText(/available/i);
     expect(badge).toBeInTheDocument();
     expect(badge).toHaveClass('status-badge', 'available');
 
-    // 5. Renders Edit button
+    // Edit button
     const editButton = screen.getByRole('link', { name: /edit/i });
     expect(editButton).toBeInTheDocument();
+    expect(editButton).toHaveAttribute('href', '/edit-vehicle/1');
 
-    // 6. Renders View button
-    const viewButton = screen.getByRole('button', { name: /view/i });
-    expect(viewButton).toBeInTheDocument();
+    // View button
+    expect(
+      screen.getByRole('button', { name: /view/i })
+    ).toBeInTheDocument();
+
   });
 
   test('clicking View should call console.log()', () => {
+
     const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
     renderWithRouter(<VehicleCard vehicle={dummyVehicle} />);
 
-    const viewButton = screen.getByRole('button', { name: /view/i });
-    fireEvent.click(viewButton);
+    fireEvent.click(
+      screen.getByRole('button', { name: /view/i })
+    );
 
     expect(consoleSpy).toHaveBeenCalledWith(dummyVehicle);
+
     consoleSpy.mockRestore();
+
   });
 
   test('Edit button should render the correct navigation link', () => {
+
     renderWithRouter(<VehicleCard vehicle={dummyVehicle} />);
 
-    const editButton = screen.getByRole('link', { name: /edit/i });
-    expect(editButton).toHaveAttribute('href', '/edit-vehicle/1');
+    expect(
+      screen.getByRole('link', { name: /edit/i })
+    ).toHaveAttribute('href', '/edit-vehicle/1');
+
   });
+
 });
