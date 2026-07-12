@@ -11,9 +11,6 @@ const VehicleCard = ({ vehicle, onPurchaseSuccess }) => {
 
   const role = localStorage.getItem("role");
 
-  const handleView = () => {
-    console.log(vehicle);
-  };
 
   const handleDelete = async () => {
     const confirmDelete = window.confirm(`Are you sure you want to delete this ${make} ${model}?`);
@@ -126,12 +123,6 @@ const VehicleCard = ({ vehicle, onPurchaseSuccess }) => {
 
       <div className="vehicle-card-actions">
         <div className="actions-row row-1">
-          <button
-            onClick={handleView}
-            className="btn btn-view"
-          >
-            View
-          </button>
 
           <button
             onClick={handlePurchase}

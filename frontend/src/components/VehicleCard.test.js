@@ -40,20 +40,11 @@ describe('VehicleCard Component', () => {
     expect(badge).toHaveClass('status-badge', 'available');
 
     expect(screen.getByRole('link', { name: /edit/i })).toHaveAttribute('href', '/edit-vehicle/1');
-    expect(screen.getByRole('button', { name: /view/i })).toBeInTheDocument();
     
     // Purchase button renders
     expect(screen.getByRole('button', { name: /^purchase$/i })).toBeInTheDocument();
   });
 
-  test('clicking View should call console.log()', () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    renderWithRouter(<VehicleCard vehicle={dummyVehicle} />);
-
-    fireEvent.click(screen.getByRole('button', { name: /view/i }));
-    expect(consoleSpy).toHaveBeenCalledWith(dummyVehicle);
-    consoleSpy.mockRestore();
-  });
 
   test('handles successful purchase request and triggers callback', async () => {
     api.post.mockResolvedValueOnce({ data: {} });
