@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/vehicles")
@@ -40,5 +41,29 @@ public class VehicleController {
     public String deleteVehicle(@PathVariable String id) {
         vehicleService.deleteVehicle(id);
         return "Vehicle deleted successfully";
+    }
+
+    @GetMapping("/search")
+    public List<Vehicle> searchVehicles(
+
+            @RequestParam(required = false) String keyword,
+
+            @RequestParam(required = false) Double minPrice,
+
+            @RequestParam(required = false) Double maxPrice) {
+
+        return vehicleService.searchVehicles(keyword, minPrice, maxPrice);
+    }
+
+    @PostMapping("/{id}/purchase")
+    public Vehicle purchaseVehicle(@PathVariable String id) {
+        return vehicleService.purchaseVehicle(id);
+    }
+
+    @PostMapping("/{id}/restock")
+    public Vehicle restockVehicle(@PathVariable String id,
+                                  @RequestBody Map<String, Integer> request) {
+
+        return vehicleService.restockVehicle(id, request.get("quantity"));
     }
 }

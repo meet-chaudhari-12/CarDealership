@@ -17,6 +17,9 @@ public class Vehicle {
     @NotBlank(message = "Model is required")
     private String model;
 
+    @NotBlank(message = "Category is required")
+    private String category;
+
     @Min(value = 1886, message = "Invalid year")
     private int year;
 
@@ -29,9 +32,10 @@ public class Vehicle {
     public Vehicle() {
     }
 
-    public Vehicle(String make, String model, int year, double price, int quantity) {
+    public Vehicle(String make, String model, String category, int year, double price, int quantity) {
         this.make = make;
         this.model = model;
+        this.category = category;
         this.year = year;
         this.price = price;
         this.quantity = quantity;
@@ -59,6 +63,14 @@ public class Vehicle {
 
     public void setModel(String model) {
         this.model = model;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public int getYear() {
