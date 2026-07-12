@@ -129,3 +129,17 @@
   text-align: center;
 }
 
+#price::-webkit-outer-spin-button,
+#price::-webkit-inner-spin-button,
+#quantity::-webkit-outer-spin-button,
+#quantity::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+#price[type=number],
+#quantity[type=number] {
+  -moz-appearance: textfield;
+}
+
+

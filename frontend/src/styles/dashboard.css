@@ -161,7 +161,14 @@
 
 .vehicle-card-actions {
   display: flex;
+  flex-direction: column;
   gap: 10px;
+}
+
+.actions-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
 }
 
 .btn {
@@ -198,6 +205,61 @@
 .btn-view:hover {
   background-color: #0056b3;
 }
+
+.btn-purchase {
+  background-color: #28a745;
+  color: #ffffff;
+}
+
+.btn-purchase:hover {
+  background-color: #218838;
+}
+
+.btn-purchase:disabled {
+  background-color: #6c757d;
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.btn-restock {
+  background-color: #ff9800;
+  color: #ffffff;
+}
+
+.btn-restock:hover {
+  background-color: #e65100;
+}
+
+.btn-delete {
+  background-color: #dc3545;
+  color: #ffffff;
+}
+
+.btn-delete:hover {
+  background-color: #bd2130;
+}
+
+.card-message {
+  font-size: 12px;
+  margin-top: 15px;
+  padding: 8px;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.card-message.success {
+  color: #2e7d32;
+  background-color: #e8f5e9;
+  border: 1px solid #a3cfbb;
+}
+
+.card-message.error {
+  color: #d32f2f;
+  background-color: #fde8e8;
+  border: 1px solid #f8b4b4;
+}
+
 
 .empty-state {
   text-align: center;

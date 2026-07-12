@@ -29,6 +29,7 @@ class VehicleServiceTest {
         Vehicle vehicle = new Vehicle(
                 "Toyota",
                 "Fortuner",
+                "SUV",
                 2024,
                 4200000,
                 5
@@ -48,8 +49,8 @@ class VehicleServiceTest {
     void shouldReturnAllVehicles() {
 
         List<Vehicle> vehicles = List.of(
-                new Vehicle("Toyota", "Fortuner", 2024, 4200000, 5),
-                new Vehicle("Honda", "City", 2023, 1500000, 3)
+                new Vehicle("Toyota", "Fortuner", "SUV", 2024, 4200000, 5),
+                new Vehicle("Honda", "City", "Sedan", 2023, 1500000, 3)
         );
 
         when(vehicleRepository.findAll()).thenReturn(vehicles);
@@ -67,6 +68,7 @@ class VehicleServiceTest {
         Vehicle vehicle = new Vehicle(
                 "BMW",
                 "X5",
+                "SUV",
                 2024,
                 9000000,
                 2
@@ -88,6 +90,7 @@ class VehicleServiceTest {
         Vehicle existingVehicle = new Vehicle(
                 "Toyota",
                 "Fortuner",
+                "SUV",
                 2024,
                 4200000,
                 5
@@ -96,6 +99,7 @@ class VehicleServiceTest {
         Vehicle updatedVehicle = new Vehicle(
                 "Toyota",
                 "Legender",
+                "SUV",
                 2025,
                 4500000,
                 8
@@ -121,6 +125,7 @@ class VehicleServiceTest {
         Vehicle vehicle = new Vehicle(
                 "Toyota",
                 "Fortuner",
+                "SUV",
                 2024,
                 4200000,
                 5

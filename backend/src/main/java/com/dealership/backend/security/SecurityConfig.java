@@ -31,13 +31,20 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+
                         // Allow CORS preflight requests
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         // Public authentication endpoints
                         .requestMatchers("/api/auth/**").permitAll()
 
-                        // Everything else requires authentication
+                        // ADMIN only
+                        .requestMatchers(HttpMethod.POST, "/api/vehicles").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/vehicles/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/vehicles/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/vehicles/*/restock").hasRole("ADMIN")
+
+                        // Any logged-in user
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter,
